@@ -25,6 +25,8 @@ class WorldModel:
         self.playmode = []
         self.rcg = []
         self.rcg.append("(show 0 ((b) 0.000 0.000")
+        self.right_scored=[]
+        self.left_scored=[]
 
         self.rcl_l = [[None for j in range(12)]
                       for i in range(FULL_STATE_TIME + 1)]
@@ -33,10 +35,12 @@ class WorldModel:
 
         self.file_path = file_path
         self.file_name = file_path.split("/")[-1].split(".")[0]
-        self.left_team_name = "HELIOS2022"
+        self.left_team_name =         re.split(
+        "_[0-9]+", re.split("^[0-9]+-", self.file_name.split("-vs-")[0])[1])[0]  # ^[0-9]+-  yz modify
         # re.split(
         # "_[0-9]+", re.split("^[0-9]+-", self.file_name.split("-vs-")[0])[1])[0]  # ^[0-9]+-  yz modify
-        self.right_team_name = "YuShan2022"
+        self.right_team_name =   re.split(
+            "_[0-9]+", self.file_name.split("-vs-")[1])[0]
         # re.split(
         #     "_[0-9]+", self.file_name.split("-vs-")[1])[0]
 
@@ -47,7 +51,8 @@ class WorldModel:
         #     "-vs-")[1].split(self.right_team_name + "_")[1])
 
         self.game_time = GameTime(0, 6000)
-
+        # print(self.right_team_name)
+        # print(self.left_team_name)
         self.last_kicker_side = "left"
 
         self.mode = 'before_kick_off_l'
@@ -86,11 +91,13 @@ class WorldModel:
                     action = {'kick': None, 'dash': None, 'catch': None, 'turn': None, 'turn_neck': None,
                               'change_view': None, 'tackle': None, 'attentionto': None, 'say': None, 'pointto': None}
 
-                    if self.left_team_name in line and not "Coach" in line:
+                    if self.left_team_name+"_" in line and not "Coach" in line:
+                        # print(line)
                         rcl_unum = int(line.split(self.left_team_name)[1].split(": ")[0].split("_")[1])
-
-                        if rcl_cycle >= 6000 or rcl_cycle == 3000:
-                            self.rcl_l[rcl_cycle][rcl_unum] = PlayerObject(_unum=rcl_unum, action=action, team="left")
+                        # if rcl_cycle >= 6000 or rcl_cycle == 3000:
+                        if  rcl_cycle == 3000 or rcl_cycle>=6000:
+                            if rcl_cycle<=6000:
+                                self.rcl_l[rcl_cycle][rcl_unum] = PlayerObject(_unum=rcl_unum, action=action, team="left")
                             continue
 
                         rcl_action = line.split(self.left_team_name)[1].split(": ")[1]
@@ -107,11 +114,14 @@ class WorldModel:
                                                                        vy=player_vy, _unum=rcl_unum, action=action,
                                                                        team="left")
 
-                    elif self.right_team_name in line and not "Coach" in line:
+                    elif self.right_team_name+"_" in line and not "Coach" in line:
+                        # print(line)
                         rcl_unum = int(line.split(self.right_team_name)[1].split(": ")[0].split("_")[1])
 
-                        if rcl_cycle >= 6000 or rcl_cycle == 3000:
-                            self.rcl_r[rcl_cycle][rcl_unum] = PlayerObject(_unum=rcl_unum, action=action, team="right")
+                        # if rcl_cycle >= 6000 or rcl_cycle == 3000:
+                        if  rcl_cycle == 3000 or rcl_cycle>=6000:
+                            if rcl_cycle<=6000:
+                                self.rcl_r[rcl_cycle][rcl_unum] = PlayerObject(_unum=rcl_unum, action=action, team="right")
                             continue
 
                         rcl_action = line.split(self.right_team_name)[1].split(": ")[1]
@@ -127,6 +137,13 @@ class WorldModel:
                         self.rcl_r[rcl_cycle][rcl_unum] = PlayerObject(x=player_x, y=player_y, vx=player_vx,
                                                                        vy=player_vy, _unum=rcl_unum, action=action,
                                                                        team="right")
+                    #if the right team scored a goal in the gial we should save the cycle    
+                    elif "referee goal_r" in line:
+                        self.right_scored.append(rcl_cycle)
+                    elif "referee goal_l" in line:
+                        self.left_scored.append(rcl_cycle)
+                    
+                        # print(line)
         print("World Model init done!")
 
     @staticmethod
@@ -135,13 +152,17 @@ class WorldModel:
             action['kick'] = [rcl_action.split('kick')[1].split(' ')[1],
                               rcl_action.split('kick')[1].split(' ')[2].split(')')[0]]
         if 'dash' in rcl_action:
-            action['dash'] = [float(rcl_action.split('dash')[1].split(' ')[1].split(')')[0])] if '(' in \
-                                                                                                 rcl_action.split(
-                                                                                                     'dash')[
-                                                                                                     1].split(' ')[
-                                                                                                     1] else [
-                float(rcl_action.split('dash')[1].split(' ')[1]),
-                float(rcl_action.split('dash')[1].split(' ')[2].split(')')[0])]
+            dash_power=list(map(float,rcl_action.split('dash')[1].split(')')[0].strip().split(' ')))
+            # print(dash_power)
+            # print(rcl_action)
+            action['dash']=dash_power
+            # action['dash'] = [float(rcl_action.split('dash')[1].split(' ')[1].split(')')[0])] if '(' in \
+            #                                                                                      rcl_action.split(
+            #                                                                                          'dash')[
+            #                                                                                          1].split(' ')[
+            #                                                                                          1] else [
+            #     float(rcl_action.split('dash')[1].split(' ')[1]),
+            #     float(rcl_action.split('dash')[1].split(' ')[2].split(')')[0])]
         if 'catch' in rcl_action:
             action['catch'] = float(rcl_action.split('catch')[1].split(' ')[1].split(')')[0])
         if 'turn_neck' in rcl_action:
@@ -164,6 +185,13 @@ class WorldModel:
     def time(self):
         return self.game_time
 
+    def is_goal_cycle_right(self,cycle):
+        return cycle in self.right_scored
+        # return cycle in self.right_scored
+    def is_goal_cycle_left(self,cycle):
+        return cycle in self.left_scored
+        # return cycle in self.right_scored
+    
     def ball(self, cycle=0):
         if cycle == 0:
             cycle = self.game_time.cycle()
@@ -196,16 +224,16 @@ class WorldModel:
         goalie = self.rcl_l[cycle][1]
         our_players = self.rcl_l[cycle][2:]
         their_players = self.rcl_r[cycle][1:]
-        our_players.sort(key=lambda x: x.dist(goalie))
-        their_players.sort(key=lambda x: x.dist(goalie))
+        our_players.sort(key=lambda z: z.dist(goalie))
+        their_players.sort(key=lambda z: z.dist(goalie))
         return our_players, their_players
 
     def get_nearest_players_to_ball(self, cycle):
         ball = self.ball(cycle)
-        our_players = self.rcl_l[cycle]
-        their_players = self.rcl_r[cycle]
-        our_players.sort(key=lambda x: x.dist(ball))
-        their_players.sort(key=lambda x: x.dist(ball))
+        our_players = self.rcl_l[cycle][1:]  #hassan :| az bazikon 0 gzshti in hey none type mide 5 saate oskol shdm
+        their_players = self.rcl_r[cycle][1:]
+        our_players.sort(key=lambda z: z.dist(ball.get_pos()))
+        their_players.sort(key=lambda z: z.dist(ball.get_pos()))
         return our_players, their_players
 
     def get_our_team_name(self):
