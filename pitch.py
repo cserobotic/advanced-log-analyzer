@@ -7,6 +7,7 @@ import os
 CSV_DIRECTORY = '/home/sana/robotic/advanced-log-analyzer'
 
 def process_csv_file(filename):
+    print(filename)
     df = pd.read_csv(filename)
     if df.empty:
         return None
@@ -62,25 +63,50 @@ def get_ball_moves(last_100_cycles:list):
     ball_y = [float(position['ball_y'])  for position in last_100_cycles]
     return ball_x,ball_y
 
+def get_shoot_kick_coordinate(last_100_cycles:list):
+    shoot_data = {"unum": [], "x": [], "y": []}
+    kick_data = {"unum": [], "x": [], "y": []}
 
-def draw_football_ground(p_unum,kicker_x,kicker_y,ball_x,ball_y,right_team,left_team,image_path):
+    for cycle in last_100_cycles:
+        if cycle["opp_player_0_shoot"] == 1:
+            shoot_data["unum"].append(cycle["opp_player_0_unum"])
+            shoot_data["x"].append(cycle["opp_player_0_x"])
+            shoot_data["y"].append(cycle["opp_player_0_y"])
+        elif cycle["opp_player_0_kick"] == 1:
+            kick_data["unum"].append(cycle["opp_player_0_unum"])
+            kick_data["x"].append(cycle["opp_player_0_x"])
+            kick_data["y"].append(cycle["opp_player_0_y"])
+    return shoot_data,kick_data
+
+
+def draw_football_ground(p_unum,kicker_x,kicker_y,ball_x,ball_y,right_team,left_team,image_path,shoot_data,kick_data):
     fig, ax = plt.subplots()
     # ax.set_aspect('equal')
 
-    ax.plot(ball_x, ball_y,'g--', linewidth=1 ,label='ball')
-    ax.plot(kicker_x,kicker_y,'r--',linewidth=1, label='kicker')
-    for i, (x, y) in enumerate(zip(ball_x, ball_y)):
-         if i<=3 or i==len(ball_x)-1:
-           ax.text(x, y, str(i), ha='center', va='bottom')
-    for i, (x, y) in enumerate(zip(kicker_x, kicker_y)):
-         if i==0 or i==len(kicker_x)-1:
-           ax.text(x, y, str(i), ha='center', va='bottom')
+
+    #draw ball path
+    cmap = plt.get_cmap('viridis')
+    for i in range(len(ball_x) - 1):
+        x_start, y_start = ball_x[i], ball_y[i]
+        x_end, y_end = ball_x[i + 1], ball_y[i + 1]
+        color = cmap(i / len(ball_x))
+        ax.plot([x_start, x_end], [y_start, y_end], linewidth=1, color=color)
+
+
+    plt.scatter(kick_data["x"], kick_data["y"], color='hotpink',s=80, label='potential Pass')
+    plt.scatter(shoot_data["x"], shoot_data["y"], color='red',s=60, label='Shoot')
+    for i, txt in enumerate(kick_data["unum"]):
+         plt.annotate(txt, (kick_data["x"][i], kick_data["y"][i]),  ha='center',fontsize=12)
+
+    for i, txt in enumerate(shoot_data["unum"]):
+          plt.annotate(txt, (shoot_data["x"][i], shoot_data["y"][i]),  ha='center',fontsize=12)
+
     ax.plot([0, 0], [-34, 34], color='white')
     ax.plot([-52.5,-47],[-9,-9],color='white')
     ax.plot([-52.5,-47],[9,9],color='white')
     ax.plot([-47,-47],[-9,9],color='white')
-    ax.set_xlim(-52.5, 52.5)
-    ax.set_ylim(-34, 34)
+    ax.set_xlim(-53.5, 53.5)
+    ax.set_ylim(-35, 35)
     ax.set_facecolor('lightgreen')
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
@@ -106,8 +132,9 @@ def main():
                     ball_x, ball_y = get_ball_moves(group)
                     right_team = group[0]['right_team']
                     left_team = group[0]['left_team']
+                    shoot_data,kick_data=get_shoot_kick_coordinate(group)
                     image_path=os.path.join(CSV_DIRECTORY, os.path.splitext(filename)[0] + '.png')
-                    draw_football_ground(p_unum, kicker_x, kicker_y, ball_x, ball_y, right_team, left_team,image_path)
+                    draw_football_ground(p_unum, kicker_x, kicker_y, ball_x, ball_y, right_team, left_team,image_path,shoot_data,kick_data)
 
 
 
