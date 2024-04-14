@@ -155,7 +155,7 @@ def main():
             csv_path = os.path.join(CSV_DIRECTORY, filename)
             folder_directory=os.path.join(CSV_DIRECTORY,filename.split('.')[0])
             if os.path.exists(folder_directory):
-                for i in range (1,100):
+                for i in range (1,500):
                    if not os.path.exists(folder_directory+str(i)):
                          folder_directory=folder_directory+str(i)
                          os.mkdir(folder_directory)
