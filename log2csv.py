@@ -28,7 +28,7 @@ class Log2CSV:
                 if wm.get_cycle()>100:
                     first_cycle=wm.get_cycle()-100
 
-                for this_cycle in range(first_cycle,last_cycle):    
+                for this_cycle in range(first_cycle,last_cycle+1):    
                     
                     wm.game_mode(cycle=this_cycle)
                     ball_x = wm.get_ball(this_cycle).get_x()

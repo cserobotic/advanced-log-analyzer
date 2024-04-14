@@ -35,7 +35,7 @@ def get_unum_last_kicker(last_100_cycles:list):
        
 
 def get_kicker_moves(player_unum:int,last_100_cycles:list):
-    print(player_unum)
+    # print(player_unum)
     kicker_x=[]
     kicker_y=[]
     for cycle in last_100_cycles:
@@ -153,9 +153,18 @@ def main():
         if filename.endswith('.csv'):
             print(filename)
             csv_path = os.path.join(CSV_DIRECTORY, filename)
+            folder_directory=os.path.join(CSV_DIRECTORY,filename.split('.')[0])
+            if os.path.exists(folder_directory):
+                for i in range (1,100):
+                   if not os.path.exists(folder_directory+str(i)):
+                         folder_directory=folder_directory+str(i)
+                         os.mkdir(folder_directory)
+                         break
+            else: 
+                os.mkdir(folder_directory)
             groups = process_csv_file(csv_path)
+            index=0
             if groups:
-                print('yes')
                 for group in groups:
                     p_unum = get_unum_last_kicker(group)
                     kicker_x, kicker_y = get_kicker_moves(p_unum, group)
@@ -163,8 +172,9 @@ def main():
                     right_team = group[0]['right_team']
                     left_team = group[0]['left_team']
                     shoot_data,kick_data=get_shoot_kick_coordinate(group)
-                    image_path=os.path.join(CSV_DIRECTORY, os.path.splitext(filename)[0] + '.png')
+                    image_path=os.path.join(folder_directory,str(index) + '.png')
                     draw_football_ground(p_unum, kicker_x, kicker_y, ball_x, ball_y, right_team, left_team,image_path,shoot_data,kick_data)
+                    index+=1
 
 
 
