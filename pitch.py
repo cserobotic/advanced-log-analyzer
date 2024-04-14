@@ -8,10 +8,12 @@ import math
 CSV_DIRECTORY = '/home/sana/robotic/advanced-log-analyzer'
 
 def process_csv_file(filename):
+    if os.stat(filename).st_size == 0:
+        return None
     print(filename)
     df = pd.read_csv(filename)
-    if df.empty:
-        return None
+    # if df.empty:
+    #     return None
     grouped = df.groupby('right_team_score')
     result = []
     
@@ -129,7 +131,7 @@ def draw_football_ground(p_unum,kicker_x,kicker_y,ball_x,ball_y,right_team,left_
         x_start, y_start = ball_x[i], ball_y[i]
         x_end, y_end = ball_x[i + 1], ball_y[i + 1]
         color = cmap(i / len(ball_x))
-        ax.plot([x_start, x_end], [y_start, y_end], linewidth=1, color=color)
+        ax.plot([x_start, x_end], [y_start, y_end], linewidth=2, color=color)
 
     #draw players
     plt.scatter(kick_data["x"], kick_data["y"], color='hotpink',s=80, label='potential Pass')
@@ -164,7 +166,7 @@ def main():
                 os.mkdir(folder_directory)
             groups = process_csv_file(csv_path)
             index=0
-            if groups:
+            if groups is not None:
                 for group in groups:
                     p_unum = get_unum_last_kicker(group)
                     kicker_x, kicker_y = get_kicker_moves(p_unum, group)

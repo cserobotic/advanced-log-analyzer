@@ -35,20 +35,10 @@ class WorldModel:
 
         self.file_path = file_path
         self.file_name = file_path.split("/")[-1].split(".")[0]
-        self.left_team_name =         re.split(
-        "_[0-9]+", re.split("^[0-9]+-", self.file_name.split("-vs-")[0])[1])[0]  # ^[0-9]+-  yz modify
-        # re.split(
-        # "_[0-9]+", re.split("^[0-9]+-", self.file_name.split("-vs-")[0])[1])[0]  # ^[0-9]+-  yz modify
-        self.right_team_name =   re.split(
-            "_[0-9]+", self.file_name.split("-vs-")[1])[0]
-        # re.split(
-        #     "_[0-9]+", self.file_name.split("-vs-")[1])[0]
 
-        # self.left_team_score = int(self.file_name.split(
-        #     "-vs-")[0].split(self.left_team_name + "_")[1])
-
-        # self.right_team_score = int(self.file_name.split(
-        #     "-vs-")[1].split(self.right_team_name + "_")[1])
+        #change the names for autotest files 
+        self.left_team_name =         re.split("_[0-9]+", re.split("^[0-9]+-", self.file_name.split("-vs-")[0])[1])[0] 
+        self.right_team_name =   re.split("_[0-9]+", self.file_name.split("-vs-")[1])[0]
 
         self.game_time = GameTime(0, 6000)
         # print(self.right_team_name)
