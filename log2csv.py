@@ -39,7 +39,8 @@ class Log2CSV:
                            'mode': wm.mode,
                            'ball_x': ball_x,
                            'ball_y': ball_y,
-                           'right_team_score':right_team_Score_count
+                           'right_team_score':right_team_Score_count,
+                           'game_id':wm.file_name
                            }
                     our_players_nearest_to_ball,their_players_nearest_to_ball=wm.get_nearest_players_to_ball(this_cycle)
 
@@ -64,11 +65,24 @@ class Log2CSV:
                writer.writeheader()
 
     def append_csv(self,csv_path):
+        existing_games = set()  
+        
+        if os.path.exists(csv_path):
+            with open(csv_path, 'r') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    # print(row)
+                    existing_games.add((row['game_id'],int(row['right_team_score']),int(row['cycle'])))
+        # print(existing_games)
+        # print(existing_games.pop())
+        # print(('20240403174641-ma_1-vs-RoboCIn_1', '1', '4403') in existing_games)
         with open(csv_path, 'a') as f:
-            if len(self.rows)!=0:
-                writer = csv.DictWriter(f, fieldnames=self.rows[0].keys())
-                # writer.writerow(None)
-                writer.writerows(self.rows)
+                if len(self.rows)!=0:
+                     writer = csv.DictWriter(f, fieldnames=self.rows[0].keys())
+                     for row in self.rows:
+                        #   print((row['game_id'],row['right_team_score'],row['cycle']))
+                          if (row['game_id'],row['right_team_score'],row['cycle'])  not in existing_games:
+                              writer.writerow(row)
 
 SRC_DIRECTORY='/home/sana/robotic/R32D'
 OUTPUT_DIRECTORY='/home/sana/robotic/advanced-log-analyzer'
@@ -76,11 +90,11 @@ def read_file(file):
     log_path = os.path.join(SRC_DIRECTORY, file) 
     wm = WorldModel(log_path)
     l2c = Log2CSV(wm)
-    csv_filename = os.path.splitext(file)[0] + '.csv'
+    csv_filename = wm.right_team_name+ '.csv'
     csv_path = os.path.join(OUTPUT_DIRECTORY, csv_filename)
     if not os.path.exists(csv_path):
         l2c.init_csv(csv_path)
-        l2c.append_csv(csv_path)
+    l2c.append_csv(csv_path)
     print('done')
 
 

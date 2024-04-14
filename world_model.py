@@ -37,7 +37,7 @@ class WorldModel:
         self.file_name = file_path.split("/")[-1].split(".")[0]
 
         #change the names for autotest files 
-        self.left_team_name =         re.split("_[0-9]+", re.split("^[0-9]+-", self.file_name.split("-vs-")[0])[1])[0] 
+        self.left_team_name =     re.split("_[0-9]+", re.split("^[0-9]+-", self.file_name.split("-vs-")[0])[1])[0] 
         self.right_team_name =   re.split("_[0-9]+", self.file_name.split("-vs-")[1])[0]
 
         self.game_time = GameTime(0, 6000)
@@ -49,6 +49,7 @@ class WorldModel:
 
         rcgfile = file_path[0:-3] + "rcg"
         rclfile = file_path[0:-3] + "rcl"
+        self.game_id=None
 
         with open(rcgfile, 'r') as rcg:
             for line in rcg:
