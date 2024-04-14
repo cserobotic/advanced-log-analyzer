@@ -6,7 +6,7 @@ from world_model import WorldModel
 
 
 def in_shoot_area(opp_x, opp_y):
-    return opp_x < -34 and (opp_y < 22.16 or opp_y > -22.6)
+    return opp_x < -34 and ( 0 < opp_y < 20.16 or -20.16  < opp_y < 0)
 
 
 class Log2CSV:
@@ -52,10 +52,6 @@ class Log2CSV:
                         row[f'opp_player_{i}_y'] = opp_y
                         row[f'opp_player_{i}_kick'] = 1 if their_players_nearest_to_ball[i].get_kick() else 0
                         row[f'opp_player_{i}_shoot'] = 1 if in_shoot_area(opp_x,opp_y) and their_players_nearest_to_ball[i].get_kick()  else 0
-
-                     # if wm.get_ball(wm.get_cycle()).get_x() > -25:
-            #     wm.time().add_time()
-            #     continue
 
             # wm.game_mode(cycle=wm.get_cycle())
             # tm_players, opp_players = wm.get_nearest_players_to_goalie(wm.get_cycle())
@@ -114,7 +110,7 @@ class Log2CSV:
                 # writer.writerow(None)
                 writer.writerows(self.rows)
 
-SRC_DIRECTORY='/home/sana/robotic/R32D/src'
+SRC_DIRECTORY='/home/sana/robotic/R32D'
 OUTPUT_DIRECTORY='/home/sana/robotic/advanced-log-analyzer'
 def read_file(file):
     log_path = os.path.join(SRC_DIRECTORY, file) 
@@ -124,7 +120,8 @@ def read_file(file):
     csv_path = os.path.join(OUTPUT_DIRECTORY, csv_filename)
     if not os.path.exists(csv_path):
         l2c.init_csv(csv_path)
-    l2c.append_csv(csv_path)
+        l2c.append_csv(csv_path)
+    print('done')
 
 
 def main():
@@ -140,3 +137,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    print('done2')
